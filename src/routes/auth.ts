@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 import { check, validationResult } from "express-validator";
 import bcrypt from "bcrypt";
-import JWT, { JwtPayload } from "jsonwebtoken";
+import JWT from "jsonwebtoken";
 import dotenv from "dotenv";
 import { users } from "../../database";
 const router = express.Router();
@@ -29,7 +30,7 @@ router.post(
     }
 
     // Validate if user already exists
-    let user = users.find((user) => {
+    const user = users.find((user) => {
       return user.email === email;
     });
 
@@ -90,7 +91,7 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   // Look for user email in the database
-  let user = users.find((user) => {
+  const user = users.find((user) => {
     return user.email === email;
   });
 
@@ -106,7 +107,7 @@ router.post("/login", async (req, res) => {
   }
 
   // Compare hased password with user password to see if they are valid
-  let isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
     return res.status(401).json({
@@ -144,7 +145,7 @@ router.post("/login", async (req, res) => {
 });
 
 //db에서 가져온 refreshToken - 예시용
-let refreshTokens: Array<String> = [];
+const refreshTokens: Array<string> = [];
 
 //Create new access token from refresh token
 router.post("/token", async (req: any, res: any) => {
