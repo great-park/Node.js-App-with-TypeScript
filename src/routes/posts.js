@@ -1,6 +1,6 @@
 const router = require("express").Router();
-const { publicPosts, privatePosts } = require("../database");
-const authToken = require("../middleware/authenticateToken");
+const { publicPosts, privatePosts } = require("../../database");
+const authToken = require("../../middleware/authenticateToken");
 
 router.get("/public", (req, res) => {
   res.json(publicPosts);
