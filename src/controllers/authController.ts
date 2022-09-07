@@ -1,7 +1,8 @@
 import { users, refreshTokens } from '../../database';
 import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-
+import dotenv from 'dotenv';
+dotenv.config();
 /**
  * 함수는 일급 객체이므로 함수 리터럴로 생성한 함수 객체를 변수에 할당할 수 있다.
  * 이러한 정의 방식을 함수 표현식이라고 한다.

@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import express from 'express';
-import bcrypt from 'bcrypt';
-import JWT from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import { users, refreshTokens } from '../../database';
+import { users } from '../../database';
 import * as auth from '../controllers/authController';
 
 const router = express.Router();
-dotenv.config();
 
 /**
  * 1. 회원가입 API
