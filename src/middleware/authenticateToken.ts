@@ -4,11 +4,6 @@ import { logger } from '../../config/winston';
 dotenv.config();
 
 export const authToken = async (req: any, res: any, next: any) => {
-  // Option 1
-  // const authHeader = req.headers["authorization"];
-  // const token = authHeader && authHeader.split(" ")[1]; // Bearer Token
-
-  // Option 2
   const token = req.header('x-auth-token');
 
   // If token not found, send error message

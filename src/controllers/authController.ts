@@ -1,7 +1,6 @@
 import { users, refreshTokens } from '../../database';
 import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-// import { check, validationResult } from 'express-validator';
 
 /**
  * 회원가입 API
@@ -12,34 +11,12 @@ import bcrypt from 'bcrypt';
 export const signUp = async function (req: any, res: any) {
   const { email, password } = req.body;
 
-  /**
-   * To do : request 검증 미들웨어
-
-    [
-    check('email', 'Invalid email').isEmail(),
-    check('password', 'Password must be at least 6 chars long').isLength({
-      min: 6,
-    }),
-  ],
-
-  Validate user input
-  const errors = validationResult(req);
-
-     if (!errors.isEmpty()) {
-       return res.status(400).json({
-         errors: errors.array(),
-       });
-     }
-   */
-
   // Validate if user already exists
   const user = users.find((user) => {
     return user.email === email;
   });
 
   if (user) {
-    // 422 Unprocessable Entity: server understands the content type of the request entity
-    // 200 Ok: Gmail, Facebook, Amazon, Twitter are returning 200 for user already exists
     return res.status(200).json({
       errors: [
         {
@@ -62,7 +39,6 @@ export const signUp = async function (req: any, res: any) {
     password: hashedPassword,
   });
 
-  // Do not include sensitive information in JWT
   const accessToken = await JWT.sign(
     { email },
     process.env.ACCESS_TOKEN_SECRET,
@@ -130,8 +106,6 @@ export const login = async function (req: any, res: any) {
     }
   );
 
-  //To do : db에 refreshToken 저장
-  // Set refersh token in refreshTokens array
   refreshTokens.push(refreshToken);
   res.json({
     accessToken,
