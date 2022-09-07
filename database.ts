@@ -36,3 +36,6 @@ export const privatePosts = [
     content: 'Post 4 is private',
   },
 ];
+
+//db에서 가져온 refreshToken - 예시용
+export const refreshTokens: Array<string> = [];
