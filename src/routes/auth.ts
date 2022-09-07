@@ -1,9 +1,9 @@
-import express from 'express';
+import express from "express";
 import { check, validationResult } from "express-validator";
 import bcrypt from "bcrypt";
-import JWT from "jsonwebtoken";
-import dotenv from "dotenv"
-import {users} from '../../database';
+import JWT, { JwtPayload } from "jsonwebtoken";
+import dotenv from "dotenv";
+import { users } from "../../database";
 const router = express.Router();
 dotenv.config();
 
@@ -47,9 +47,9 @@ router.post(
     }
 
     // Hash password before saving to database
-    const salt = await bcrypt.genSalt(10);
+    const salt: string = await bcrypt.genSalt(10);
     console.log("salt:", salt);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword: string = await bcrypt.hash(password, salt);
     console.log("hashed password:", hashedPassword);
 
     // Save email and password to database/array
@@ -118,18 +118,84 @@ router.post("/login", async (req, res) => {
     });
   }
 
-  // Send JWT
+  // Send JWT access token
   const accessToken = await JWT.sign(
     { email },
     process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "10s",
+      expiresIn: "10s", //예제를 위해 유효기간을 10초로. 보통은 10~15분
+    }
+  );
+  const refreshToken = await JWT.sign(
+    { email },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: "1m", //보통은 14일 정도
     }
   );
 
+  //To do : db에 refreshToken 저장
+  // Set refersh token in refreshTokens array
+  refreshTokens.push(refreshToken);
   res.json({
     accessToken,
+    refreshToken,
   });
+});
+
+//db에서 가져온 refreshToken - 예시용
+let refreshTokens: Array<String> = [];
+
+//Create new access token from refresh token
+router.post("/token", async (req: any, res: any) => {
+  const refreshToken = req.header("x-auth-token");
+  // If token is not provided, send error message
+  if (!refreshToken) {
+    res.status(401).json({
+      errors: [
+        {
+          msg: "Token not found",
+        },
+      ],
+    });
+  }
+  // If token does not exist, send error message
+  else if (!refreshTokens.includes(refreshToken)) {
+    res.status(403).json({
+      errors: [
+        {
+          msg: "Invalid refresh token_1",
+        },
+      ],
+    });
+  }
+  else {
+    try {
+
+      const user: any = await JWT.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      );
+
+      const { email } = user;
+
+      const accessToken = await JWT.sign(
+        { email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "10s" }
+      );
+      res.json({ accessToken });
+    } catch (error) {
+      res.status(403).json({
+        errors: [
+          {
+            msg: error,
+            result: error.toString(),
+          },
+        ],
+      });
+    }
+  }
 });
 
 module.exports = router;

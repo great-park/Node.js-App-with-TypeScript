@@ -10,7 +10,6 @@ export const authToken = async (req: any, res: any, next: any) => {
 
   // Option 2
   const token = req.header("x-auth-token");
-  logger.debug(`진입`);
 
   // If token not found, send error message
   if (!token) {
@@ -26,8 +25,8 @@ export const authToken = async (req: any, res: any, next: any) => {
     try {
       const user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       // req.user = user.email;
-      logger.debug(`user : ${user}`);
-      logger.debug(`user type : ${typeof(user)}`);
+      logger.info(`user :`, user.toString());
+      logger.info(`user type : ${typeof(user)}`);
       next();
     } catch (error) {
       res.status(403).json({
