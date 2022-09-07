@@ -1,4 +1,4 @@
-import {exp as express} from "../config/express";
+import { exp as express } from '../config/express';
 import { logger } from '../config/winston';
 let port: number;
 if (process.env.NODE_ENV === 'development') {
@@ -10,5 +10,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 express().listen(port);
-logger.info(`environment : ${process.env.NODE_ENV} - API Server Start At Port ${port}`);
-
+logger.info(
+  `environment : ${process.env.NODE_ENV} - API Server Start At Port ${port}`
+);

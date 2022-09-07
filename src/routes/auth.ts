@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import express from "express";
-import { check, validationResult } from "express-validator";
-import bcrypt from "bcrypt";
-import JWT from "jsonwebtoken";
-import dotenv from "dotenv";
-import { users } from "../../database";
+import express from 'express';
+import { check, validationResult } from 'express-validator';
+import bcrypt from 'bcrypt';
+import JWT from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import { users } from '../../database';
 const router = express.Router();
 dotenv.config();
 
 // Sign up
 router.post(
-  "/signup",
+  '/signup',
   [
-    check("email", "Invalid email").isEmail(),
-    check("password", "Password must be at least 6 chars long").isLength({
+    check('email', 'Invalid email').isEmail(),
+    check('password', 'Password must be at least 6 chars long').isLength({
       min: 6,
     }),
   ],
@@ -41,7 +41,7 @@ router.post(
         errors: [
           {
             email: user.email,
-            msg: "The user already exists",
+            msg: 'The user already exists',
           },
         ],
       });
@@ -49,9 +49,9 @@ router.post(
 
     // Hash password before saving to database
     const salt: string = await bcrypt.genSalt(10);
-    console.log("salt:", salt);
+    console.log('salt:', salt);
     const hashedPassword: string = await bcrypt.hash(password, salt);
-    console.log("hashed password:", hashedPassword);
+    console.log('hashed password:', hashedPassword);
 
     // Save email and password to database/array
     users.push({
@@ -64,7 +64,7 @@ router.post(
       { email },
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "10s",
+        expiresIn: '10s',
       }
     );
 
@@ -82,12 +82,12 @@ router.post(
 ///////////////////////////
 
 // Get all users
-router.get("/users", (req, res) => {
+router.get('/users', (req, res) => {
   res.json(users);
 });
 
 // Log in
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   // Look for user email in the database
@@ -100,7 +100,7 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({
       errors: [
         {
-          msg: "Invalid credentials",
+          msg: 'Invalid credentials',
         },
       ],
     });
@@ -113,7 +113,7 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({
       errors: [
         {
-          msg: "Email or password is invalid",
+          msg: 'Email or password is invalid',
         },
       ],
     });
@@ -124,14 +124,14 @@ router.post("/login", async (req, res) => {
     { email },
     process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "10s", //예제를 위해 유효기간을 10초로. 보통은 10~15분
+      expiresIn: '10s', //예제를 위해 유효기간을 10초로. 보통은 10~15분
     }
   );
   const refreshToken = await JWT.sign(
     { email },
     process.env.REFRESH_TOKEN_SECRET,
     {
-      expiresIn: "1m", //보통은 14일 정도
+      expiresIn: '1m', //보통은 14일 정도
     }
   );
 
@@ -148,14 +148,14 @@ router.post("/login", async (req, res) => {
 const refreshTokens: Array<string> = [];
 
 //Create new access token from refresh token
-router.post("/token", async (req: any, res: any) => {
-  const refreshToken = req.header("x-auth-token");
+router.post('/token', async (req: any, res: any) => {
+  const refreshToken = req.header('x-auth-token');
   // If token is not provided, send error message
   if (!refreshToken) {
     res.status(401).json({
       errors: [
         {
-          msg: "Token not found",
+          msg: 'Token not found',
         },
       ],
     });
@@ -165,14 +165,12 @@ router.post("/token", async (req: any, res: any) => {
     res.status(403).json({
       errors: [
         {
-          msg: "Invalid refresh token_1",
+          msg: 'Invalid refresh token_1',
         },
       ],
     });
-  }
-  else {
+  } else {
     try {
-
       const user: any = await JWT.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET
@@ -183,7 +181,7 @@ router.post("/token", async (req: any, res: any) => {
       const accessToken = await JWT.sign(
         { email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "10s" }
+        { expiresIn: '10s' }
       );
       res.json({ accessToken });
     } catch (error) {
