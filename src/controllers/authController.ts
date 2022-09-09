@@ -1,4 +1,7 @@
 import { users, refreshTokens } from '../../database';
+import { NextFunction, Request, Response } from 'express';
+import { response, errResponse } from '../interface/response/response';
+import { message } from '../interface/response/responseMessage';
 import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
@@ -14,32 +17,25 @@ dotenv.config();
  * @param res
  * @returns
  */
-export const signUp = async function (req: any, res: any) {
+export const signUp = async function (req: Request, res: Response) {
   const { email, password } = req.body;
 
-  // Validate if user already exists
+  // Validate if user already exists, 예제용 db
   const user = users.find((user) => {
     return user.email === email;
   });
 
   if (user) {
-    return res.status(200).json({
-      errors: [
-        {
-          email: user.email,
-          msg: 'The user already exists',
-        },
-      ],
-    });
+    return res
+      .status(200)
+      .send(errResponse(message.SIGNUP_USER_ALREADY_EXISTS));
   }
 
   // Hash password before saving to database
   const salt: string = await bcrypt.genSalt(10);
-  console.log('salt:', salt);
   const hashedPassword: string = await bcrypt.hash(password, salt);
-  console.log('hashed password:', hashedPassword);
 
-  // Save email and password to database/array
+  // 예제용 db
   users.push({
     email,
     password: hashedPassword,
@@ -53,9 +49,7 @@ export const signUp = async function (req: any, res: any) {
     }
   );
 
-  res.json({
-    accessToken,
-  });
+  res.send(response(message.SUCCESS, accessToken));
 };
 
 /**
@@ -64,7 +58,7 @@ export const signUp = async function (req: any, res: any) {
  * @param res
  * @returns
  */
-export const login = async function (req: any, res: any) {
+export const login = async function (req: Request, res: Response) {
   const { email, password } = req.body;
 
   // Look for user email in the database
@@ -74,26 +68,16 @@ export const login = async function (req: any, res: any) {
 
   // If user not found, send error message
   if (!user) {
-    return res.status(400).json({
-      errors: [
-        {
-          msg: 'Invalid credentials',
-        },
-      ],
-    });
+    return res.status(400).send(errResponse(message.SIGNIN_EMAIL_NOT_EXISTS));
   }
 
   // Compare hased password with user password to see if they are valid
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    return res.status(401).json({
-      errors: [
-        {
-          msg: 'Email or password is invalid',
-        },
-      ],
-    });
+    return res
+      .status(401)
+      .send(errResponse(message.SIGNIN_EMAIL_PASSWORD_INVALID));
   }
 
   // Send JWT access token
@@ -113,33 +97,18 @@ export const login = async function (req: any, res: any) {
   );
 
   refreshTokens.push(refreshToken);
-  res.json({
-    accessToken,
-    refreshToken,
-  });
+  res.send(response(message.SUCCESS, { accessToken, refreshToken }));
 };
 
-export const getAccessToken = async function (req: any, res: any) {
+export const getAccessToken = async function (req: Request, res: Response) {
   const refreshToken = req.header('x-auth-token');
   // If token is not provided, send error message
   if (!refreshToken) {
-    res.status(401).json({
-      errors: [
-        {
-          msg: 'Token not found',
-        },
-      ],
-    });
+    res.status(401).send(errResponse(message.TOKEN_EMPTY));
   }
   // If token does not exist, send error message
   else if (!refreshTokens.includes(refreshToken)) {
-    res.status(403).json({
-      errors: [
-        {
-          msg: 'Invalid refresh token_1',
-        },
-      ],
-    });
+    res.status(403).send(errResponse(message.TOKEN_VERIFICATION_FAILURE));
   } else {
     try {
       const user: any = await JWT.verify(
@@ -154,8 +123,10 @@ export const getAccessToken = async function (req: any, res: any) {
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '10s' }
       );
-      res.json({ accessToken });
+
+      res.send(response(message.SUCCESS, { accessToken: accessToken }));
     } catch (error) {
+      //others
       res.status(403).json({
         errors: [
           {

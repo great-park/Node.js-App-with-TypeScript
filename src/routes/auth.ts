@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { users } from '../../database';
 import * as auth from '../controllers/authController';
 
@@ -13,7 +13,7 @@ router.post('/signup', auth.signUp);
 /**
  * 2. 회원 조회 API
  */
-router.get('/users', (req, res) => {
+router.get('/users', (req: Request, res: Response) => {
   res.json(users);
 });
 
