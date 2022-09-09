@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./src/customType"],
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es2015",                                  
-    "moduleResolution": "node",                       
-    "outDir": "dist",                                   
-    "baseUrl": ".",       
-    "sourceMap": true,  
-    "downlevelIteration": true,   
-    "noImplicitAny": true,                                            
-    "paths": {"*" : ["node_modules/*"]},                                     
+    "target": "es2015",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "noImplicitAny": true,
+    "paths": { "*": ["node_modules/*"] }
   },
   "include": ["src/**/*"]
 }
