@@ -5,6 +5,8 @@ import { message } from '../interface/response/responseMessage';
 import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 dotenv.config();
 /**
  * 함수는 일급 객체이므로 함수 리터럴로 생성한 함수 객체를 변수에 할당할 수 있다.
@@ -20,9 +22,10 @@ dotenv.config();
 export const signUp = async function (req: Request, res: Response) {
   const { email, password } = req.body;
 
-  // Validate if user already exists, 예제용 db
-  const user = users.find((user) => {
-    return user.email === email;
+  const user = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
   });
 
   if (user) {
@@ -35,10 +38,13 @@ export const signUp = async function (req: Request, res: Response) {
   const salt: string = await bcrypt.genSalt(10);
   const hashedPassword: string = await bcrypt.hash(password, salt);
 
-  // 예제용 db
-  users.push({
-    email,
+  const addUser = {
+    email: email,
     password: hashedPassword,
+    refreshTokens: '',
+  };
+  await prisma.user.create({
+    data: addUser,
   });
 
   const accessToken = await JWT.sign(
@@ -62,8 +68,10 @@ export const login = async function (req: Request, res: Response) {
   const { email, password } = req.body;
 
   // Look for user email in the database
-  const user = users.find((user) => {
-    return user.email === email;
+  const user = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
   });
 
   // If user not found, send error message
@@ -96,7 +104,15 @@ export const login = async function (req: Request, res: Response) {
     }
   );
 
-  refreshTokens.push(refreshToken);
+  const updateUser = await prisma.user.update({
+    where: {
+      email: email,
+    },
+    data: {
+      refreshToken: refreshToken,
+    },
+  });
+
   res.send(response(message.SUCCESS, { accessToken, refreshToken }));
 };
 
